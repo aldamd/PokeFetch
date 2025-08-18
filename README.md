@@ -6,7 +6,7 @@ It dynamically adjusts the fastfetch configuration based on the randomly generat
 Put something along these lines in your shell config:
 ```sh
 pokecache='pokemon-colorscripts --no-title > ~/.cache/pokemon.txt'
-clear='clear && pokecache && ./pokefetch.py && fastfetch --logo ~/.cache/pokemon.txt'
+clear='clear && pokecache && /path/to/pokefetch.py && fastfetch --logo ~/.cache/pokemon.txt'
 clear
 ```
 
