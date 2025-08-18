@@ -5,7 +5,7 @@ from collections import Counter
 import json
 
 
-class PokeFastFetch:
+class PokeFetch:
     def __init__(self, offset: int, cached_path: str, ff_config_path: str) -> None:
         self._offset = offset
         self._cached_path = cached_path
@@ -178,7 +178,8 @@ class PokeFastFetch:
 
 
 if __name__ == "__main__":
+    HOMEDIR = "/home/aldamd"
     OFFSET = -3  # offset from fastfetch config preamble to module entries
-    CACHED_PATH = r"/home/aldamd/.cache/pokemon.txt"
-    FF_CONFIG_PATH = r"/home/aldamd/.config/fastfetch/config.jsonc"
-    PokeFastFetch(OFFSET, CACHED_PATH, FF_CONFIG_PATH)
+    CACHED_PATH = rf"{HOMEDIR}/.cache/pokemon.txt"
+    FF_CONFIG_PATH = rf"{HOMEDIR}/.config/fastfetch/config.jsonc"
+    PokeFetch(OFFSET, CACHED_PATH, FF_CONFIG_PATH)
