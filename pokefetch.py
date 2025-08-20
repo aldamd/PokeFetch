@@ -36,13 +36,16 @@ class PokeFastFetch:
         pattern = r"(?:38|48);2;(\d{1,3});(\d{1,3});(\d{1,3})"
         results = re.findall(pattern, pokemon)
         results = [tuple(map(int, c)) for c in results]
-        results = [rgb for rgb in results if rgb > (100, 100, 100)]
+        results = [
+            (r, g, b)
+            for (r, g, b) in results
+            if not (all(c < 90 for c in (r, g, b)) or all(c > 180 for c in (r, g, b)))
+        ]
+        if len(results) == 0:
+            raise ValueError("ANSII parsing failed, zero results found")
 
         binned = [self._quantize_color(c) for c in results]
         results_map = Counter(binned)
-        if len(results_map) == 0:
-            raise ValueError("ANSII parsing failed, zero results found")
-
         r, g, b = results_map.most_common(1)[0][0]
         color_fmt = f"38;2;{r};{g};{b}"
 
@@ -174,7 +177,8 @@ class PokeFastFetch:
 
 
 if __name__ == "__main__":
+    HOMEDIR = r"/home/aldamd"
     OFFSET = -3  # offset from fastfetch config preamble to module entries
-    CACHED_PATH = r"/home/aldamd/.cache/pokemon.txt"
-    FF_CONFIG_PATH = r"/home/aldamd/.config/fastfetch/config.jsonc"
+    CACHED_PATH = rf"{HOMEDIR}/.cache/pokemon.txt"
+    FF_CONFIG_PATH = rf"{HOMEDIR}/.config/fastfetch/config.jsonc"
     PokeFastFetch(OFFSET, CACHED_PATH, FF_CONFIG_PATH)
