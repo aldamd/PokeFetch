@@ -5,7 +5,7 @@ from collections import Counter
 import json
 
 
-class PokeFetch:
+class PokeFastFetch:
     def __init__(self, offset: int, cached_path: str, ff_config_path: str) -> None:
         self._offset = offset
         self._cached_path = cached_path
@@ -23,8 +23,11 @@ class PokeFetch:
 
         self._write_ff_config()
 
+    @staticmethod
+    def _quantize_color(rgb: tuple, step: int = 8) -> tuple:
+        return tuple((c // step) * step for c in rgb)
+
     def _extract_colors(self) -> None:
-        # TODO use a better color selection alg
         with open(self._cached_path) as f:
             pokemon = f.read().strip()
             pokemon_lines = len(pokemon.split("\n"))
@@ -32,22 +35,15 @@ class PokeFetch:
 
         pattern = r"(?:38|48);2;(\d{1,3});(\d{1,3});(\d{1,3})"
         results = re.findall(pattern, pokemon)
-        results_map = Counter(results)
+        results = [tuple(map(int, c)) for c in results]
+        results = [rgb for rgb in results if rgb > (100, 100, 100)]
+
+        binned = [self._quantize_color(c) for c in results]
+        results_map = Counter(binned)
         if len(results_map) == 0:
             raise ValueError("ANSII parsing failed, zero results found")
 
-        r = g = b = None
-        for item in results_map:
-            if len(item) != 3:
-                raise ValueError(
-                    "ANSII parsing failed, less than 3 items found while iterating"
-                )
-            r, g, b = item
-            if int(r) < 100 and int(g) < 100 and int(b) < 100:
-                continue
-            break
-        if (r, g, b) == ("0", "0", "0"):
-            raise ValueError("Invalid ANSII selected for formatting")
+        r, g, b = results_map.most_common(1)[0][0]
         color_fmt = f"38;2;{r};{g};{b}"
 
         self._pokemon = pokemon
@@ -178,8 +174,7 @@ class PokeFetch:
 
 
 if __name__ == "__main__":
-    HOMEDIR = "/home/aldamd"
     OFFSET = -3  # offset from fastfetch config preamble to module entries
-    CACHED_PATH = rf"{HOMEDIR}/.cache/pokemon.txt"
-    FF_CONFIG_PATH = rf"{HOMEDIR}/.config/fastfetch/config.jsonc"
-    PokeFetch(OFFSET, CACHED_PATH, FF_CONFIG_PATH)
+    CACHED_PATH = r"/home/aldamd/.cache/pokemon.txt"
+    FF_CONFIG_PATH = r"/home/aldamd/.config/fastfetch/config.jsonc"
+    PokeFastFetch(OFFSET, CACHED_PATH, FF_CONFIG_PATH)
